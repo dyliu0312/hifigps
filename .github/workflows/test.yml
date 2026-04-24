@@ -1,8 +1,10 @@
-name: Python package
+name: Test
 
 on:
   push:
     branches: ["main"]
+    tags-ignore:
+      - '*'
   pull_request:
     branches: ["main"]
 
