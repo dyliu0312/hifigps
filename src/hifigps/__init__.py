@@ -2,7 +2,7 @@
 hifigps - A collection of python tools used in my HI filament stacking simulation work, arxiv:2411.03988.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 __author__ = "dyliu <dyliu0312@gmail.com>"
 
 

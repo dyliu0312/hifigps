@@ -29,6 +29,17 @@ Added
 - CLI commands: ``hifigps-convolve``, ``hifigps-stack``, ``hifigps-find-fuzzy``
 - Modules: data, plot, calculation, constant, stack, bins, utils, estimate, halo
 
+[0.0.1] - 2025-12-02 to 2026-01-24
+-------------------
+
+Added
+~~~~~
+- Project initialization
+- Basic filament stacking framework
+- All core features completed (used for arxiv:2411.03988)
+
+**Note:** Versions 0.0.x were used for the paper arxiv:2411.03988. Later versions (0.1.0+) focused on optimization and new project adaptations.
+
 .. raw:: html
 
    <div id="ghangelog"></div>
