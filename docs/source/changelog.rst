@@ -3,13 +3,16 @@ Changelog
 
 All notable changes to ``hifigps`` are documented here.
 
-[Unreleased]
-------------
+[0.2.0] - 2026-04-24
+-------------------
 
 Added
 ~~~~~
 - Documentation with Sphinx (Gallery, Tutorials, API Reference)
 - GitHub Actions CI workflow with lint and test
+- GitHub Pages deployment workflow for docs
+- Gallery page showcasing example figures
+- Tutorials page linking to Jupyter notebooks
 
 Changed
 ~~~~~~~
