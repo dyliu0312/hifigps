@@ -18,7 +18,7 @@ Including:
       like chi-squared, reduced chi-squared, and RMS residual (`info_fitness`).
 """
 
-from typing import Generator, Optional, Sequence, Tuple, Union
+from typing import Iterator, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -300,7 +300,7 @@ def yield_mask_data(
     *args: np.ndarray,
     mask: MaskType = None,
     flat: bool = False,
-) -> Generator[np.ndarray]:
+) -> Iterator[np.ndarray]:
     """
     Apply a mask to one or more arrays and yield the results.
 
@@ -321,8 +321,8 @@ def yield_mask_data(
 
     Yields
     ------
-    Generator[np.ndarray]
-        A generator that yields each masked (and optionally flattened) array.
+    Iterator[np.ndarray]
+        An iterator that yields each masked (and optionally flattened) array.
     """
     for arg in args:
         if mask is not None:
