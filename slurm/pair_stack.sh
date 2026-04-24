@@ -22,31 +22,54 @@ module load openmpi/4.1.4 anaconda/3.9
 # --- Script Configuration ---
 
 # Stacking parameters
-export NFS=35                   # Number of frequency slices to extract, equivalent to a frequency width:  2*NFS+1 * freq_resolution
-export NWORKER=72               # Number of workers for multiprocessing (should be <= --cpus-per-task)
-export SSIZE=500                # Split size for pair catalog processing, results in the same split will be stacked together.
-export RANDOM_FLIP="True"       # Randomly flip individual pair map (True/False)
-export HALFWIDTH="3.0"          # Stack result map half-width
-export NPIX_X="120"             # Stack result map X pixels
-export NPIX_Y="120"             # Stack result map Y pixels
-# export SAVEKEYS="Signal,Mask"   # Datasets to save in the output file
-# export COMPRESSION="gzip"       # Compression method for the output file (gzip/lz4)
-# export SKIP_EXIST="False"       # Skip existing output files (True/False)
+# NFS: Number of frequency slices to extract, equivalent to a frequency width:  2*NFS+1 * freq_resolution
+# NWORKER: Number of workers for multiprocessing (should be <= --cpus-per-task)
+# SSIZE: Split size for pair catalog processing, results in the same split will be stacked together.
+# RANDOM_FLIP: Randomly flip individual pair map (True/False)
+# HALFWIDTH: Stack result map half-width
+# NPIX_X/NPIX_Y: Stack result map pixels
+# SAVEKEYS: Datasets to save in the output file, default to Signal and Mask
+# COMPRESSION: Compression method for the output file (gzip/lz4)
+# SKIP_EXIST: Skip existing output files (True/False)
+
+NFS=35
+NWORKER=72
+SSIZE=500
+RANDOM_FLIP="True"
+HALFWIDTH="3.0"
+NPIX_X="120"
+NPIX_Y="120"
+# SAVEKEYS="Signal,Mask" 
+# COMPRESSION="gzip"
+# SKIP_EXIST="False"
 
 # Define base paths and prefixes
-export INPUT_MAP_BASE="/home/dyliu/data/"
-export INPUT_MAP_PREFIX="prepared_map_cube.h5"
-export INPUT_MAP_KEYS="T,mask,f_bin_edge,x_bin_edge,y_bin_edge"
-export INPUT_MAP_MASKED="True"    # True to read 'mask' dataset in the input map file. Change to false to directly use zore masking.
+INPUT_MAP_BASE="/home/dyliu/data/"
+INPUT_MAP_PREFIX="prepared_map_cube.h5"
+INPUT_MAP_KEYS="T,mask,f_bin_edge,x_bin_edge,y_bin_edge"
+INPUT_MAP_MASKED="True"    # True to read 'mask' dataset in the input map file. Change to false to directly use zore masking.
 
-export INPUT_PAIRCAT_BASE="/home/dyliu/data/sdss_catalog/"
-export INPUT_PAIRCAT_PREFIX="pair_catalog"
-export INPUT_PAIRCAT_KEYS='is_ra,pos'
+INPUT_PAIRCAT_BASE="/home/dyliu/data/sdss_catalog/"
+INPUT_PAIRCAT_PREFIX="pair_catalog"
+INPUT_PAIRCAT_KEYS='is_ra,pos'
 
-export OUTPUT_STACK_BASE="/home/dyliu/data/galaxy_pair_stack/"
-export OUTPUT_STACK_PREFIX="stack_result_nfs"$NFS
+OUTPUT_STACK_BASE="/home/dyliu/data/galaxy_pair_stack/"
+OUTPUT_STACK_PREFIX="stack_result_nfs"$NFS
 
 # Run the Python script
-hifigps-stack
+hifigps-stack \
+    --map-base "$INPUT_MAP_BASE" \
+    --map-prefix "$INPUT_MAP_PREFIX" \
+    --paircat-base "$INPUT_PAIRCAT_BASE" \
+    --paircat-prefix "$INPUT_PAIRCAT_PREFIX" \
+    --out-base "$OUTPUT_STACK_BASE" \
+    --out-prefix "$OUTPUT_STACK_PREFIX" \
+    --nfs "$NFS" \
+    --ssize "$SSIZE" \
+    --nworker "$NWORKER" \
+    --random-flip "$RANDOM_FLIP" \
+    --halfwidth "$HALFWIDTH" \
+    --npix-x "$NPIX_X" \
+    --npix-y "$NPIX_Y"
 
 date
