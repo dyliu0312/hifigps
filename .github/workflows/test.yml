@@ -3,10 +3,12 @@ name: Test
 on:
   push:
     branches: ["main"]
-    tags-ignore:
-      - '*'
-  pull_request:
-    branches: ["main"]
+    paths:
+      - "src/hifigps/**"
+    # tags-ignore:
+    # - '*'
+  # pull_request:
+  #   branches: ["main"]
 
 jobs:
   test:
