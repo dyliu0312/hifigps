@@ -100,7 +100,7 @@ def get_fuzzy_indices(halo_npart:list, subhalo_npart:list):
     return st_inds, ed_inds
 
 
-if __name__ == "__main__":
+def main():
     # --- Read input arguments from environment variables ---
     # Using os.getenv allows execution without command-line arguments if variables are set
     base_dir = os.getenv('TNG_BASE_DIR')
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         print('export TNG_BASE_DIR="/path/to/TNG/simulation/"')
         print('export TNG_SNAP_NUM="91"')
         print('export OUTPUT_PATH="/path/to/output/fuzz_particles.hdf5"')
-        print('python find_fuzz_particles.py')
+        print('hifigps-find-fuzzy')
         sys.exit()
     
     # --- Input Processing and Setup ---
@@ -148,3 +148,7 @@ if __name__ == "__main__":
     save_h5(output, KEYS, [st_ids, ed_ids]) # type: ignore
     print(f'Saving fuzz indices finished in {time.time()-t2:.2f} seconds')
     print(f'Total elapsed time: {time.time()-t0:.2f} seconds')
+
+
+if __name__ == "__main__":
+    main()

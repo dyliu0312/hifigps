@@ -266,7 +266,7 @@ def stack_run(
         save_h5(output, savekeys, [s.data, s.mask], groupname, compression=compression)
 
 
-if __name__ == "__main__":
+def main():
     print("---- Starting Stacking Script ----")
     print("--- Initializing ---")
     # --- Read configuration from environment variables ---
@@ -512,6 +512,7 @@ if __name__ == "__main__":
         mapbin_keys_choice = [key_xbin, key_ybin, key_fbin]
         mapbins = read_h5(map_path, mapbin_keys_choice)
         # load map
+        global mask_map # Make it global for multiprocessing access in get_ipm
         if INPUT_MAP_MASKED:
             map_array, mask_array = read_h5(map_path, [key_map, key_mask])
             mask_map = np.ma.masked_array(map_array, mask=mask_array, dtype=np.float32)
@@ -548,3 +549,7 @@ if __name__ == "__main__":
 
     gc.collect()  # Trigger garbage collection
     print("\n---- Done ----")
+
+
+if __name__ == "__main__":
+    main()

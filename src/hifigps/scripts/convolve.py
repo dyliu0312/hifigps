@@ -69,13 +69,13 @@ def reconstruct_map(files, output, key="T") -> None:
     )
 
 
-if __name__ == "__main__":
+def main():
     args = sys.argv
 
     if len(args) != 4:
-        print("Usage: python convolve.py [map_file_path] [out_path] [nworker]\n")
+        print("Usage: hifigps-convolve [map_file_path] [out_path] [nworker]\n")
         print(
-            "Example: python convolve.py '/home/dyliu/data/test.hdf5' '/home/dyliu/output/' 4 "
+            "Example: hifigps-convolve '/home/dyliu/data/test.hdf5' '/home/dyliu/output/' 4 "
         )
         sys.exit()
 
@@ -143,3 +143,7 @@ if __name__ == "__main__":
     print("Delete temporary output files finished!")
 
     print("---processing finished---")
+
+
+if __name__ == "__main__":
+    main()

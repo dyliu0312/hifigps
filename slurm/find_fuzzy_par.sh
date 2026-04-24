@@ -26,6 +26,6 @@ export TNG_BASE_DIR="/home/DATA/ycli/tng/TNG-100/output/"
 export TNG_SNAP_NUM="91" 
 export OUTPUT_PATH="/home/dyliu/Filament/Fuzzy_particles/fuzzy_par_indices.h5"
 
-python -u /home/dyliu/hifigps/scripts/find_fuzzy_par.py 
+hifigps-find-fuzzy 
 
 date

@@ -7,7 +7,8 @@ name = "hifigps"
 version = "0.1.0"
 description = "A collection of python tools used in my HI filament stacking simulation work, arxiv:2411.03988."
 readme = "README.md"
-license = {file = "LICENSE"}
+authors = [{ name = "dyliu", email = "liudy0312@gmail.com" }]
+license = { file = "LICENSE" }
 requires-python = ">=3.8"
 dependencies = [
     "numpy",
@@ -25,21 +26,25 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Astronomy",
 ]
 
 [project.urls]
 homepage = "https://github.com/dyliu0312/hifigps"
-
-[tool.uv.sources]
-illustris-python = { git = "https://github.com/illustristng/illustris_python.git" }
+Source = "https://github.com/dyliu0312/hifigps"
+Tracker = "https://github.com/dyliu0312/hifigps/issues"
 
 [project.optional-dependencies]
-stack = [
-    "tqdm",
-]
-prepare = [
-    "illustris-python",
-]
+stack = ["tqdm"]
+prepare = ["illustris-python"]
+
+[project.scripts]
+hifigps-convolve = "hifigps.scripts.convolve:main"
+hifigps-find-fuzzy = "hifigps.scripts.find_fuzzy_par:main"
+hifigps-stack = "hifigps.scripts.pair_stack:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv.sources]
+illustris-python = { git = "https://github.com/illustristng/illustris_python.git" }

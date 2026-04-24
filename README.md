@@ -18,10 +18,12 @@ The main modules are:
 * ```estimate_fixwidth.py ```: to estimate the signal level base on given width,
 * ```bins.py           ```: helper functions for bins.
 
-There are also useful scripts in the [scripts](scripts) folder:
-* ```convolve.py       ```: to finish beam convolution (FAST main beam),
-* ```pair_stack.py     ```: to run the galaxy pairwise stacking.
-* ```find_fuzzy_par.py ```: to find the indices of inner fuzzy particles for filament only map construction.
+There are also useful scripts now available as CLI commands:
+* ```hifigps-convolve   ```: to finish beam convolution (FAST main beam),
+* ```hifigps-stack      ```: to run the galaxy pairwise stacking.
+* ```hifigps-find-fuzzy ```: to find the indices of inner fuzzy particles for filament only map construction.
+
+These scripts are located in `src/hifigps/scripts/`.
 
 ## Install
 You can simply git clone this repository and and install it with ```pip install .```
@@ -40,8 +42,8 @@ It was tested on Python>=3.8, and requires the following packages:
 * [scipy](https://scipy.org/)
 
 Optional:
-* [tqdm](https://github.com/tqdm/tqdm) (for [pair_stack.py](scripts/pair_stack.py) script)
-* [illustris_python](https://github.com/illustristng/illustris_python.git) (for [find_fuzzy_par.py](scripts/find_fuzzy_par.py) script)
+* [tqdm](https://github.com/tqdm/tqdm) (for ```hifigps-stack```)
+* [illustris_python](https://github.com/illustristng/illustris_python.git) (for ```hifigps-find-fuzzy```)
 
 ## Usage
 
@@ -56,7 +58,7 @@ freq2z(1.3*u.GHz)
 2. Other example Jupyter notebooks for **functionality usage** are in the [test](test) folder.
 
 
-3. To run the [```pair_stack.py```](scripts/pair_stack.py) script, please **see and modify** the example parameters set in the [pair_stack.sh](slurm/pair_stack.sh) file.
+3. To run the [```hifigps-stack```](src/hifigps/scripts/pair_stack.py) command, please **see and modify** the example parameters set in the [pair_stack.sh](slurm/pair_stack.sh) file.
 
 Have fun!
 
