@@ -12,7 +12,7 @@ import sys
 import time
 import os
 import illustris_python as il
-from mytools.data import save_h5 
+from hifigps.data import save_h5 
 
 def count_part_num(base:str, snap:int=91, part_type:str='gas'):
     """

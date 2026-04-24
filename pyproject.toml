@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mytools"
+name = "hifigps"
 version = "0.1.0"
 description = "A collection of python tools used in my HI filament stacking simulation work, arxiv:2411.03988."
 readme = "README.md"
@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/dyliu0312/mytools"
+homepage = "https://github.com/dyliu0312/hifigps"
 
 [tool.uv.sources]
 illustris-python = { git = "https://github.com/illustristng/illustris_python.git" }

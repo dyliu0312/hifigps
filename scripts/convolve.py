@@ -8,8 +8,8 @@ import sys
 import time
 
 from astropy.convolution import Gaussian2DKernel, convolve_fft
-from mytools.calculation import get_beam_npix
-from mytools.data import delete_files, get_filename, is_exist, np, read_h5, save_h5
+from hifigps.calculation import get_beam_npix
+from hifigps.data import delete_files, get_filename, is_exist, np, read_h5, save_h5
 
 
 def convolve(data, kernel, **kwargs) -> np.ndarray:

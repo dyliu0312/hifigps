@@ -1,4 +1,4 @@
-# Mytools
+# Hifigps
 ![](example/img_tngcube_stack_fit_res.png)
 
 ## Description
@@ -28,7 +28,7 @@ You can simply git clone this repository and and install it with ```pip install 
 
 Or directly use:
 ```sh
-pip install git+https://github.com/dyliu0312/mytools.git
+pip install git+https://github.com/dyliu0312/hifigps.git
 ```
 
 ## Dependency
@@ -47,7 +47,7 @@ Optional:
 
 After installing, you can use the functions in the modules, for example:
 ```py
-from mytools.calculation import freq2z, u
+from hifigps.calculation import freq2z, u
 freq2z(1.3*u.GHz)
 ```
 ## Notes

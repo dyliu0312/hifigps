@@ -8,7 +8,7 @@ from typing import Callable, Optional, Sequence, Tuple, Union
 import numpy as np
 from scipy.optimize import least_squares
 
-from mytools.bins import edge2center, get_id_edge, get_linbin
+from hifigps.bins import edge2center, get_id_edge, get_linbin
 
 
 def cal_r(

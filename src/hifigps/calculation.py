@@ -3,7 +3,7 @@ define some functions to calculate quantities.
 
 """
 
-from mytools.constant import (
+from hifigps.constant import (
     A_HI,
     C_BOL,
     C_HUB,

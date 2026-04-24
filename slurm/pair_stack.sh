@@ -47,6 +47,6 @@ export OUTPUT_STACK_BASE="/home/dyliu/data/galaxy_pair_stack/"
 export OUTPUT_STACK_PREFIX="stack_result_nfs"$NFS
 
 # Run the Python script
-python /home/dyliu/mytools/scripts/pair_stack.py
+python /home/dyliu/hifigps/scripts/pair_stack.py
 
 date

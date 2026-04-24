@@ -9,8 +9,8 @@ import numpy.typing as npt
 from astropy.modeling import fitting, models
 from astropy.stats import sigma_clip
 
-from mytools.plot import plot_line_diff
-from mytools.utils import info_fitness, yield_mask_data
+from hifigps.plot import plot_line_diff
+from hifigps.utils import info_fitness, yield_mask_data
 
 InputType = Union[
     float,

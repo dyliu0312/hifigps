@@ -15,7 +15,7 @@ import numpy as np
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
-from mytools.plot import (
+from hifigps.plot import (
     arg_list,
     make_figure,
     plot_heatmaps,
