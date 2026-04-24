@@ -18,14 +18,13 @@ echo "Running prime number generator program on $SLURM_CPUS_ON_NODE CPU cores"
 ## EXAMPLE slurm script for running find_fuzzy_par.py. ##
 #########################################################
 
-module load openmpi/3.1.6, anaconda/3.8 
+module load openmpi/3.1.6, anaconda/3.8
 
-# --- Script Configuration ---
+# Script Configuration
+TNG_BASE_DIR="/home/DATA/ycli/tng/TNG-100/output/"
+TNG_SNAP_NUM="91"
+OUTPUT_PATH="/home/dyliu/Filament/Fuzzy_particles/fuzzy_par_indices.h5"
 
-export TNG_BASE_DIR="/home/DATA/ycli/tng/TNG-100/output/" 
-export TNG_SNAP_NUM="91" 
-export OUTPUT_PATH="/home/dyliu/Filament/Fuzzy_particles/fuzzy_par_indices.h5"
-
-hifigps-find-fuzzy 
+hifigps-find-fuzzy "$TNG_BASE_DIR" "$TNG_SNAP_NUM" -o "$OUTPUT_PATH"
 
 date
