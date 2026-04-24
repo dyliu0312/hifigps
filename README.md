@@ -1,10 +1,10 @@
+![](example/img_tngcube_stack_fit_res.png)
 # HIFiGPS (HI Filament Detection with Galaxy Pairwise Stacking)
 
 ![arXiv](https://img.shields.io/badge/arXiv-2411.03988-orange)
 ![Python](https://img.shields.io/badge/python-3.8+-blue)
+![Tests](https://github.com/dyliu0312/hifigps/actions/workflows/test.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
-
-![](example/img_tngcube_stack_fit_res.png)
 
 ## Overview
 
