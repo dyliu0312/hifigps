@@ -2,14 +2,44 @@
 Simulate the beam smearing effect.
 """
 
+import argparse
 import gc
 import multiprocessing as mp
-import sys
 import time
 
 from astropy.convolution import Gaussian2DKernel, convolve_fft
 from hifigps.calculation import get_beam_npix
 from hifigps.data import delete_files, get_filename, is_exist, np, read_h5, save_h5
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Convolve a map with FAST main beam.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Example:
+  hifigps-convolve /data/test.hdf5 /output/ 4
+""",
+    )
+    parser.add_argument("map_file", help="Path to the input map file (.hdf5)")
+    parser.add_argument("out_path", help="Path to the output directory")
+    parser.add_argument("nworker", type=int, help="Number of worker processes")
+    parser.add_argument(
+        "-z", "--redshift", type=float, default=0.1, help="Redshift (default: 0.1)"
+    )
+    parser.add_argument(
+        "-k",
+        "--key",
+        default="T",
+        help="Key of map data in HDF5 file (default: T)",
+    )
+    parser.add_argument(
+        "-d",
+        "--dtype",
+        default="float32",
+        choices=["float32", "float64"],
+        help="Data type of output (default: float32)",
+    )
+    return parser.parse_args()
 
 
 def convolve(data, kernel, **kwargs) -> np.ndarray:
@@ -70,45 +100,35 @@ def reconstruct_map(files, output, key="T") -> None:
 
 
 def main():
-    args = sys.argv
+    args = parse_args()
 
-    if len(args) != 4:
-        print("Usage: hifigps-convolve [map_file_path] [out_path] [nworker]\n")
-        print(
-            "Example: hifigps-convolve '/home/dyliu/data/test.hdf5' '/home/dyliu/output/' 4 "
-        )
-        sys.exit()
+    Z = args.redshift
+    KEY = args.key
+    DTYPE = np.float32 if args.dtype == "float32" else np.float64
+    TEMP_PREFIX = "convolved_temp_out_"
+    OUT_SUFFIX = "_convolvedFASTbeam.hdf5"
+    WAIT_TIME = 60
 
-    # --- default args ---
-    Z = 0.1  # redshift.
-    KEY = "T"  # the key of MAP data.
-    DTYPE = np.float32  # the dtype of the MAP data, you may modify this for higher preccision, but **beware of memory usage**.
-    TEMP_PREFIX = "convolved_temp_out_"  # the prefix of temprary output file.
-    OUT_SUFFIX = "_convolvedFASTbeam.hdf5"  # the suffix of final output file.
-    WAIT_TIME = 60  # seconds, waiting for the multiprocessing result saving processes to be finished, to do further MAP reconstruction.
+    nworker = args.nworker
+    map_path = args.map_file
+    out_path = args.out_path
 
-    # --- input args ---
-    map_path, out_path, nworker = args[1:]
     print(f"load data from {map_path}")
     print(f"save result at {out_path}")
     print(f"set {nworker} workers")
 
-    # --- pre process ---
     print("---processing start----")
-    nworker = int(nworker)
     beam_kernel = beam_kernel_fast(Z)
     filename = get_filename(map_path)
     out_name = out_path + filename + OUT_SUFFIX
     if is_exist(out_name):
         print(f"This map is already processed, the output file is {out_name}!")
-        sys.exit()
+        return
 
-    # --- load the map into the memory, **beware of the MEMORY USAGE**---
     t0 = time.time()
     map_data = read_h5(map_path, KEY)
     print(f"Loading the MAP data successfully with {time.time() - t0} seconds.")
 
-    # --- multiprocess ---
     t1 = time.time()
     temp_out_file = []
     with mp.Pool(processes=nworker) as pool:
@@ -116,29 +136,22 @@ def main():
             temp_out = out_path + filename + "_" + TEMP_PREFIX + f"{i}.hdf5"
             temp_out_file.append(temp_out)
             pool.apply(convolve_save, (map_slice, beam_kernel, temp_out, KEY, DTYPE))
-            # pool.apply_async(convolve_save, (map_slice, beam_kernel, temp_out, KEY, DTYPE)) # it fail to create file
 
     print(f"Convolution process finished with {time.time() - t1} seconds.")
 
-    # --- wait the save processes fully finished---
     while True:
-        if all(
-            [is_exist(fn) for fn in temp_out_file]
-        ):  # check exist of the temporary output files
+        if all([is_exist(fn) for fn in temp_out_file]):
             break
         time.sleep(WAIT_TIME)
         print("Waiting for the temporary output files to be saved")
 
-    # --- del MAP data and collect space---
     del map_data
     gc.collect()
 
-    # --- reconstruct the sky map, **beware of this process require DOUBLE memory space of MAP data**---
     t2 = time.time()
     reconstruct_map(temp_out_file, out_name)
     print(f"Save convolved results finished with {time.time() - t2} seconds.")
 
-    # --- del temp output ---
     delete_files(temp_out_file)
     print("Delete temporary output files finished!")
 

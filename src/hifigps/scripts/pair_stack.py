@@ -2,6 +2,7 @@
 main script to finish galaxy pairwise stacking process.
 """
 
+import argparse
 import gc
 import multiprocessing as mp
 import os
@@ -25,6 +26,95 @@ from hifigps.stack import (  # type: ignore
     hist_data_3d,
 )
 from tqdm import tqdm
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Galaxy pairwise stacking script.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Example:
+  hifigps-stack --map-base /data/ --map-prefix map \\
+                --paircat-base /data/ --paircat-prefix paircat \\
+                --out-base /output/ --out-prefix stack \\
+                --nfs 10 --ssize 1000 --nworker 24
+""",
+    )
+
+    # Required arguments
+    parser.add_argument("--map-base", required=True, help="Base path to input map")
+    parser.add_argument("--map-prefix", required=True, help="Prefix of input map file")
+    parser.add_argument(
+        "--paircat-base", required=True, help="Base path to pair catalog"
+    )
+    parser.add_argument(
+        "--paircat-prefix", required=True, help="Prefix of pair catalog file"
+    )
+    parser.add_argument("--out-base", required=True, help="Base path to output")
+    parser.add_argument("--out-prefix", required=True, help="Prefix of output file")
+    parser.add_argument(
+        "--nfs", type=int, required=True, help="Number of frequency slices to stack"
+    )
+    parser.add_argument(
+        "--ssize", type=int, required=True, help="Split size for processing"
+    )
+
+    # Optional arguments
+    parser.add_argument(
+        "--map-masked",
+        type=lambda x: x.lower() == "true",
+        default=True,
+        help="Whether input map is masked (default: True)",
+    )
+    parser.add_argument(
+        "--map-keys",
+        default="T,mask,f_bin_edge,x_bin_edge,y_bin_edge",
+        help="Comma-separated keys for map data (default: T,mask,f_bin_edge,x_bin_edge,y_bin_edge)",
+    )
+    parser.add_argument(
+        "--paircat-keys",
+        default="is_ra,pos",
+        help="Comma-separated keys for pair catalog (default: is_ra,pos)",
+    )
+    parser.add_argument(
+        "--out-keys",
+        default="Signal,Mask",
+        help="Comma-separated keys for output (default: Signal,Mask)",
+    )
+    parser.add_argument(
+        "--nworker",
+        type=int,
+        default=None,
+        help="Number of workers (default: CPU count)",
+    )
+    parser.add_argument(
+        "--random-flip",
+        type=lambda x: x.lower() == "true",
+        default=True,
+        help="Random flip signal (default: True)",
+    )
+    parser.add_argument(
+        "--halfwidth", type=float, default=3.0, help="Stack result map half-width (default: 3.0)"
+    )
+    parser.add_argument(
+        "--npix-x", type=int, default=120, help="Stack result map X pixels (default: 120)"
+    )
+    parser.add_argument(
+        "--npix-y", type=int, default=120, help="Stack result map Y pixels (default: 120)"
+    )
+    parser.add_argument(
+        "--skip-exist",
+        type=lambda x: x.lower() == "true",
+        default=False,
+        help="Skip existing splits (default: False)",
+    )
+    parser.add_argument(
+        "--compression",
+        default="gzip",
+        choices=["gzip", "lzf", "none"],
+        help="Compression method (default: gzip)",
+    )
+
+    return parser.parse_args()
 
 
 def join_path(base: str, prefix: str, extension: str = ".h5") -> str:
@@ -267,141 +357,52 @@ def stack_run(
 
 
 def main():
+
+    args = parse_args()
+
+    INPUT_MAP_BASE = args.map_base
+    INPUT_MAP_PREFIX = args.map_prefix
+    INPUT_PAIECAT_BASE = args.paircat_base
+    INPUT_PAIRCAT_PREFIX = args.paircat_prefix
+    OUTPUT_STACK_BASE = args.out_base
+    OUTPUT_STACK_PREFIX = args.out_prefix
+    OUTPUT_STACK_DATA_KEYS = args.out_keys.split(",")
+    NFS = args.nfs
+    SSIZE = args.ssize
+    INPUT_MAP_MASKED = args.map_masked
+    INPUT_MAP_KEYS = args.map_keys.split(",")
+    INPUT_PAIECAT_KEYS = args.paircat_keys.split(",")
+    nworker = args.nworker if args.nworker else mp.cpu_count()
+    RANDOM_FLIP = args.random_flip
+    HALFWIDTH = args.halfwidth
+    NPIX_X = args.npix_x
+    NPIX_Y = args.npix_y
+    SKIP_EXIST = args.skip_exist
+    COMPRESSION = args.compression if args.compression != "none" else None
+
     print("---- Starting Stacking Script ----")
     print("--- Initializing ---")
-    # --- Read configuration from environment variables ---
-    try:
-        # Required parameters
-        ## files
-        INPUT_MAP_BASE = os.getenv("INPUT_MAP_BASE")
-        if INPUT_MAP_BASE is None:
-            raise ValueError("Environment variable 'INPUT_MAP_BASE' is not set.")
-
-        INPUT_MAP_PREFIX = os.getenv("INPUT_MAP_PREFIX")
-        if INPUT_MAP_PREFIX is None:
-            raise ValueError("Environment variable 'INPUT_MAP_PREFIX' is not set.")
-
-        INPUT_PAIECAT_BASE = os.getenv("INPUT_PAIRCAT_BASE")
-        if INPUT_PAIECAT_BASE is None:
-            raise ValueError("Environment variable 'INPUT_PAIRCAT_BASE' is not set.")
-
-        INPUT_PAIRCAT_PREFIX = os.getenv("INPUT_PAIRCAT_PREFIX")
-        if INPUT_PAIRCAT_PREFIX is None:
-            raise ValueError("Environment variable 'INPUT_PAIRCAT_PREFIX' is not set.")
-
-        OUTPUT_STACK_BASE = os.getenv("OUTPUT_STACK_BASE")
-        if OUTPUT_STACK_BASE is None:
-            raise ValueError("Environment variable 'OUTPUT_STACK_BASE' is not set.")
-
-        OUTPUT_STACK_PREFIX = os.getenv("OUTPUT_STACK_PREFIX")
-        if OUTPUT_STACK_PREFIX is None:
-            raise ValueError("Environment variable 'OUTPUT_STACK_PREFIX' is not set.")
-
-        OUTPUT_STACK_DATA_KEYS = os.getenv("OUTPUT_STACK_KEYS", "Signal,Mask").split(
-            ","
-        )
-        if len(OUTPUT_STACK_DATA_KEYS) != 2:
-            raise ValueError(
-                "Environment variable 'OUTPUT_STACK_KEYS' must contain exactly two keys."
-            )
-
-        ## stacking
-        NFS_STR = os.getenv("NFS")
-        if NFS_STR is None:
-            raise ValueError(
-                "Environment variable 'NFS' (number of frequency slices) is not set."
-            )
-        NFS = int(NFS_STR)
-
-        SSIZE_STR = os.getenv("SSIZE")
-        if SSIZE_STR is None:
-            raise ValueError("Environment variable 'SSIZE' (split size) is not set.")
-        SSIZE = int(SSIZE_STR)
-
-        # Optional parameters with default values
-        INPUT_MAP_MASKED = os.getenv("INPUT_MAP_MASKED", "True").lower() == "true"
-        INPUT_MAP_KEYS = os.getenv(
-            "INPUT_MAP_KEYS", "T,mask,f_bin_edge,x_bin_edge,y_bin_edge"
-        ).split(",")
-        INPUT_PAIECAT_KEYS = os.getenv("INPUT_PAIRCAT_KEYS", "is_ra,pos").split(",")
-
-        NWORKER_STR = os.getenv("NWORKER")
-        if NWORKER_STR is None or NWORKER_STR.lower() == "none":
-            nworker = mp.cpu_count()
-            print(
-                f"Warning: Environment variable 'NWORKER' not set. Defaulting to {nworker} workers.",
-                file=sys.stderr,
-            )
-        else:
-            nworker = int(NWORKER_STR)
-
-        RANDOM_FLIP_STR = os.getenv("RANDOM_FLIP", "True")
-        RANDOM_FLIP = RANDOM_FLIP_STR.lower() == "true"
-
-        HALFWIDTH_STR = os.getenv(
-            "HALFWIDTH", "3.0"
-        )  # Changed to float for more flexibility
-        HALFWIDTH = float(HALFWIDTH_STR)
-
-        NPIX_X_STR = os.getenv("NPIX_X", "120")
-        NPIX_X = int(NPIX_X_STR)
-
-        NPIX_Y_STR = os.getenv("NPIX_Y", "120")
-        NPIX_Y = int(NPIX_Y_STR)
-
-        # skip existing stacks
-        SKIP_EXIST_STR = os.getenv("SKIP_EXIST", "False")
-        SKIP_EXIST = SKIP_EXIST_STR.lower() == "true"
-
-        # compression
-        COMPRESSION = os.getenv("COMPRESSION", "gzip")
-
-    except ValueError as e:
-        print(f"Configuration Error: {e}", file=sys.stderr)
-        print("\nPlease set the following environment variables:", file=sys.stderr)
-        print("  Required:", file=sys.stderr)
-        print("    INPUT_MAP_BASE       (e.g., '/data/my_input_map_base_path')")
-        print("    INPUT_MAP_PREFIX     (e.g., 'my_input_map_prefix')")
-        print("    INPUT_PAIRCAT_BASE   (e.g., '/data/my_input_paircat_base_path')")
-        print("    INPUT_PAIRCAT_PREFIX (e.g., 'my_input_paircat_prefix')")
-        print("    OUTPUT_STACK_BASE    (e.g., '/data/my_output_stack_base_path')")
-        print("    OUTPUT_STACK_PREFIX  (e.g., 'my_output_stack_prefix')")
-        print("    NFS                  (e.g., '10')", file=sys.stderr)
-        print("    SSIZE                (e.g., '1000')", file=sys.stderr)
-        print("  Optional:", file=sys.stderr)
-        print("    COMPRESSION          (e.g., 'gzip' or 'lzf', default 'gzip')")
-        print("    SKIP_EXIST           (e.g., 'True' or 'False', default 'False')")
-        print(
-            "    INPUT_MAP_MASK       (e.g., 'True' or 'False', default 'True')",
-            file=sys.stderr,
-        )
-        print(
-            "    INPUT_MAP_KEYS       (e.g., 'T,mask,f_bin_edge,x_bin_edge,y_bin_edge', default 'T,mask,f_bin_edge,x_bin_edge,y_bin_edge')",
-            file=sys.stderr,
-        )
-        print(
-            "    INPUT_PAIRCAT_KEYS   (e.g., 'is_ra,pos', default 'is_ra,pos')",
-            file=sys.stderr,
-        )
-        print("    OUTPUT_STACK_KEYS    (e.g., 'Signal,Mask')", file=sys.stderr)
-        print(
-            "    NWORKER              (e.g., '4', default to CPU count)",
-            file=sys.stderr,
-        )
-        print(
-            "    RANDOM_FLIP          (e.g., 'True' or 'False', default 'True')",
-            file=sys.stderr,
-        )
-        print("    HALFWIDTH            (e.g., '3.0', default '3.0')", file=sys.stderr)
-        print("    NPIX_X               (e.g., '120', default '120')", file=sys.stderr)
-        print("    NPIX_Y               (e.g., '120', default '120')", file=sys.stderr)
-        sys.exit(1)
-    except Exception as e:
-        print(
-            f"An unexpected error occurred while reading environment variables: {e}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+    # --- Print loaded configuration ---
+    print("Processing with the following configuration:")
+    print("--------------")
+    print(f" Map: {join_path(INPUT_MAP_BASE, INPUT_MAP_PREFIX)}")
+    print(f" Map Masked: {INPUT_MAP_MASKED}")
+    print(f" Pair Catalog: {join_path(INPUT_PAIECAT_BASE, INPUT_PAIRCAT_PREFIX)}")
+    print(f" Output Stack: {join_path(OUTPUT_STACK_BASE, OUTPUT_STACK_PREFIX)}")
+    print(f" Output Stack Data Keys: {OUTPUT_STACK_DATA_KEYS}")
+    print(f" NFS (frequency slices to stack): {NFS}")
+    print(f" NWORKER (number of workers): {nworker}")
+    print(f" SSIZE (catalog split size for processing): {SSIZE}")
+    print(f" RANDOM_FLIP (randomly flip individual pair map): {RANDOM_FLIP}")
+    print(f" COMPRESSION (compression method): {COMPRESSION}")
+    print(f" SKIP_EXIST (skip existing stacks): {SKIP_EXIST}")
+    print(f" HALFWIDTH (stack result map half-width): {HALFWIDTH}")
+    print(f" NPIX_X (stack result map X pixels): {NPIX_X}")
+    print(f" NPIX_Y (stack result map Y pixels): {NPIX_Y}")
+    print(
+        f" Stacked result map size: {2 * HALFWIDTH}x{2 * HALFWIDTH} with {NPIX_X}x{NPIX_Y} pixels"
+    )
+    print("--------------")
 
     # --- Construct tile-specific file paths ---
 

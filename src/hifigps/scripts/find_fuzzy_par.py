@@ -2,17 +2,42 @@
 Find INNER fuzzy particles that bound to halos but not to any subhalos.
 Those were regraded as the particles of pure filaments.
 
-This script calculates the start and end indices for fuzzy particles 
+This script calculates the start and end indices for fuzzy particles
 for a given particle type in an IllustrisTNG simulation snapshot.
 
-The dataset files are assumed to be organized by with TNG default structure, Group/Halo, and then 
+The dataset files are assumed to be organized by with TNG default structure, Group/Halo, and then
 by Subhalo within each Group.
 """
-import sys
-import time
+import argparse
 import os
+import time
+
 import illustris_python as il
-from hifigps.data import save_h5 
+
+from hifigps.data import save_h5
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Find inner fuzzy particles in IllustrisTNG simulations.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Example:
+  hifigps-find-fuzzy /path/to/TNG/simulation/ 91 -o /output/fuzz_particles.hdf5
+""",
+    )
+    parser.add_argument("base", help="Base path to TNG simulation data")
+    parser.add_argument("snap", type=int, help="Snapshot number")
+    parser.add_argument(
+        "-o", "--output", required=True, help="Output file path for fuzz particle indices"
+    )
+    parser.add_argument(
+        "-p",
+        "--part-type",
+        default="gas",
+        choices=["gas", "dm", "star", "bhs", "bhw", "stars"],
+        help="Particle type (default: gas)",
+    )
+    return parser.parse_args() 
 
 def count_part_num(base:str, snap:int=91, part_type:str='gas'):
     """
@@ -101,53 +126,36 @@ def get_fuzzy_indices(halo_npart:list, subhalo_npart:list):
 
 
 def main():
-    # --- Read input arguments from environment variables ---
-    # Using os.getenv allows execution without command-line arguments if variables are set
-    base_dir = os.getenv('TNG_BASE_DIR')
-    snap_num_str = os.getenv('TNG_SNAP_NUM')
-    output = os.getenv('OUTPUT_PATH')
-    
-    if not all([base_dir, snap_num_str, output]):
-        print('Usage: Set environment variables and run the script:')
-        print('export TNG_BASE_DIR="/path/to/TNG/simulation/"')
-        print('export TNG_SNAP_NUM="91"')
-        print('export OUTPUT_PATH="/path/to/output/fuzz_particles.hdf5"')
-        print('hifigps-find-fuzzy')
-        sys.exit()
-    
-    # --- Input Processing and Setup ---
-    print(f'Loading data from BASE_DIR: {base_dir}')
-    print(f'Using SNAP_NUM: {snap_num_str}')
-    print(f'Saving fuzz indices result at OUTPUT_PATH: {output}')
-    try:
-        snap_num = int(snap_num_str) # type: ignore
-    except ValueError:
-        print(f"Error: SNAP_NUM must be an integer, got '{snap_num_str}'")
-        sys.exit()
+    args = parse_args()
 
-    # --- Default Arguments ---
-    PTYPE = 'gas' 
-    KEYS = ['start_index', 'end_index'] # Keys for the output HDF5 file
+    base_dir = args.base
+    snap_num = args.snap
+    output = args.output
+    ptype = args.part_type
 
-    # --- Count Particles Number ---
-    print(f'--- Starting particle counting for PTYPE: {PTYPE} ---')
+    print(f"Loading data from BASE_DIR: {base_dir}")
+    print(f"Using SNAP_NUM: {snap_num}")
+    print(f"Saving fuzz indices result at OUTPUT_PATH: {output}")
+    print(f"Particle type: {ptype}")
+
+    PTYPE = ptype
+    KEYS = ["start_index", "end_index"]
+
+    print(f"--- Starting particle counting for PTYPE: {PTYPE} ---")
     t0 = time.time()
-    halo_npart_list, subhalo_npart_list = count_part_num(base_dir, snap_num, PTYPE) # type: ignore
-    print(f'Particle counting finished in {time.time()-t0:.2f} seconds')
+    halo_npart_list, subhalo_npart_list = count_part_num(base_dir, snap_num, PTYPE)
+    print(f"Particle counting finished in {time.time() - t0:.2f} seconds")
 
-    # --- Get Fuzz Indices ---
-    print('--- Getting fuzz particle indices ---')
+    print("--- Getting fuzz particle indices ---")
     t1 = time.time()
     st_ids, ed_ids = get_fuzzy_indices(halo_npart_list, subhalo_npart_list)
-    print(f'Fuzz particle indices calculation finished in {time.time()-t1:.2f} seconds')
+    print(f"Fuzz particle indices calculation finished in {time.time() - t1:.2f} seconds")
 
-    # --- Save Indices --- 
-    print(f'--- Saving fuzz indices to {output} ---')
+    print(f"--- Saving fuzz indices to {output} ---")
     t2 = time.time()
-    # save_h5 is a custom function, assuming it handles the HDF5 writing
-    save_h5(output, KEYS, [st_ids, ed_ids]) # type: ignore
-    print(f'Saving fuzz indices finished in {time.time()-t2:.2f} seconds')
-    print(f'Total elapsed time: {time.time()-t0:.2f} seconds')
+    save_h5(output, KEYS, [st_ids, ed_ids])
+    print(f"Saving fuzz indices finished in {time.time() - t2:.2f} seconds")
+    print(f"Total elapsed time: {time.time() - t0:.2f} seconds")
 
 
 if __name__ == "__main__":
