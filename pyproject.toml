@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hifigps"
-version = "0.1.0"
+version = "0.2.0"
 description = "A collection of python tools used in my HI filament stacking simulation work, arxiv:2411.03988."
 readme = "README.md"
 authors = [{ name = "dyliu", email = "liudy0312@gmail.com" }]

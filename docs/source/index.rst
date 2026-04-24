@@ -1,5 +1,10 @@
 .. hifigps documentation master file
 
+.. image:: https://img.shields.io/github/stars/dyliu0312/hifigps?style=social
+   :target: https://github.com/dyliu0312/hifigps
+
+`View on GitHub <https://github.com/dyliu0312/hifigps>`_
+
 Welcome to HIFiGPS's documentation!
 ===================================
 
