@@ -28,7 +28,7 @@ Convolve a map with the FAST main beam.
 hifigps-find-fuzzy
 ------------------
 
-Find inner fuzzy particles in IllustrisTNG simulations.
+Find inner-fuzzy particles in IllustrisTNG simulations (see ![TNG docs](https://www.tng-project.org/data/docs/specifications/) for more detials about fuzzy particles).
 
 .. code-block:: bash
 

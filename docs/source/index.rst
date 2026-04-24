@@ -1,11 +1,10 @@
 .. hifigps documentation master file
 
-Welcome to hifigps's documentation!
+Welcome to HIFiGPS's documentation!
 ===================================
 
-``hifigps`` is a Python package for HI filament stacking simulation analysis
-(arxiv:2411.03988). It provides data processing, plotting, and calculation
-utilities for 21cm astronomy research.
+``hifigps`` is a Python package for HI filament detection analysis with galaxy pairwise stacking method (arxiv:2411.03988). 
+It provides full utilities, including data processing, results exraction and visulization.
 
 .. toctree::
    :maxdepth: 2
@@ -13,6 +12,9 @@ utilities for 21cm astronomy research.
 
    installation
    cli
+   tutorials
+   gallery
+   changelog
    api/modules
 
 Indices and tables
