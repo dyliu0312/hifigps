@@ -37,6 +37,7 @@ Tracker = "https://github.com/dyliu0312/hifigps/issues"
 [project.optional-dependencies]
 stack = ["tqdm"]
 prepare = ["illustris-python"]
+test = ["pytest", "pytest-cov"]
 
 [project.scripts]
 hifigps-convolve = "hifigps.scripts.convolve:main"

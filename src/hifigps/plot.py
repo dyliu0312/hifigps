@@ -697,7 +697,6 @@ def plot_ellipses(
         width  (float, list): widths of the ellipses.
         height (float, list): heights of the ellipses, default is None, use the width.
         angle  (float, list): rotation of the ellipse in degrees (**counterclockwise**)
-        theta1,theta2 (float, list): starting and ending angles in degrees.
         **kwargs: additional keyword arguments.
     """
     if height is None:
@@ -705,25 +704,21 @@ def plot_ellipses(
 
     # find the number of ellipse need to plot
     n = len(xy_pos)
-    if n == 1:
-        e = Ellipse(xy_pos[0], width, height, angle=angle, **kwargs)  # pyright: ignore[reportArgumentType]
-        ax.add_patch(e)
-    else:
-        width_list = arg_list(width, n)
-        height_list = arg_list(height, n)
-        angle_list = arg_list(angle, n)
-        for key, value in kwargs.items():
-            kwargs[key] = arg_list(
-                value, n
-            )  # Ensure any list in kwargs is the correct length
+    width_list = arg_list(width, n)
+    height_list = arg_list(height, n)
+    angle_list = arg_list(angle, n)
+    kwargs_list = {key: arg_list(val, n) for key, val in kwargs.items()}
 
-        for i, (xy, w, h, a) in enumerate(
-            zip(xy_pos, width_list, height_list, angle_list)
-        ):
-            # Extract other properties from kwargs
-            ellipse_kwargs = {key: value[i] for key, value in kwargs.items()}
-            e = Ellipse(xy, w, h, angle=a, **ellipse_kwargs)  # pyright: ignore[reportArgumentType]
-            ax.add_patch(e)
+    for i in range(n):
+        ellipse_kwargs = {key: val[i] for key, val in kwargs_list.items()}
+        e = Ellipse(
+            xy_pos[i],
+            width_list[i],
+            height_list[i],
+            angle=angle_list[i],
+            **ellipse_kwargs,
+        )  # pyright: ignore[reportArgumentType]
+        ax.add_patch(e)
 
 
 def plot_arcs(
@@ -753,34 +748,26 @@ def plot_arcs(
 
     # find the number of ellipse need to plot
     n = len(xy_pos)
-    if n == 1:
-        a = Arc(
-            xy_pos[0],  # pyright: ignore[reportArgumentType]
-            width,  # pyright: ignore[reportArgumentType]
-            height,  # pyright: ignore[reportArgumentType]
-            angle=angle,  # pyright: ignore[reportArgumentType]
-            theta1=theta1,  # pyright: ignore[reportArgumentType]
-            theta2=theta2,  # pyright: ignore[reportArgumentType]
-            **kwargs,
-        )  # type: ignore
-        ax.add_patch(a)
-    else:
-        width_list = arg_list(width, n)
-        height_list = arg_list(height, n)
-        angle_list = arg_list(angle, n)
-        theta1_list = arg_list(theta1, n)
-        theta2_list = arg_list(theta2, n)
-        for key, value in kwargs.items():
-            kwargs[key] = arg_list(
-                value, n
-            )  # Ensure any list in kwargs is the correct length
+    width_list = arg_list(width, n)
+    height_list = arg_list(height, n)
+    angle_list = arg_list(angle, n)
+    theta1_list = arg_list(theta1, n)
+    theta2_list = arg_list(theta2, n)
+    kwargs_list = {key: arg_list(val, n) for key, val in kwargs.items()}
 
-        for i, (xy, w, h, a, t1, t2) in enumerate(
-            zip(xy_pos, width_list, height_list, angle_list, theta1_list, theta2_list)
-        ):
-            arg_kwargs = {key: value[i] for key, value in kwargs.items()}
-            a = Arc(xy, w, h, angle=a, theta1=t1, theta2=t2, **arg_kwargs)
-            ax.add_patch(a)
+    for i in range(n):
+        arc_kwargs = {key: val[i] for key, val in kwargs_list.items()}
+        a = Arc(
+            xy_pos[i],  # pyright: ignore[reportArgumentType]
+            width_list[i],  # pyright: ignore[reportArgumentType]
+            height_list[i],  # pyright: ignore[reportArgumentType]
+            angle=angle_list[i],  # pyright: ignore[reportArgumentType]
+            theta1=theta1_list[i],  # pyright: ignore[reportArgumentType]
+            theta2=theta2_list[i],  # pyright: ignore[reportArgumentType]
+            **arc_kwargs,
+        )
+        ax.add_patch(a)
+
 
 
 def plot_sector(
