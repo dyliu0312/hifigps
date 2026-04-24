@@ -3,6 +3,7 @@
 
 ![arXiv](https://img.shields.io/badge/arXiv-2411.03988-orange)
 ![Python](https://img.shields.io/badge/python-3.8+-blue)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dyliu0312.github.io/hifigps/)
 ![Tests](https://github.com/dyliu0312/hifigps/actions/workflows/test.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 
